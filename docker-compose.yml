@@ -1,0 +1,72 @@
+version: '3.7'
+services:
+    
+    collection:
+        container_name: collection_component
+        build:
+            context: collection
+            dockerfile: DockerfileCollection
+        image: collection:latest
+        depends_on:
+            - arangodb
+            - test
+        restart: on-failure
+        ports:
+            - 8081:8081
+        networks:
+            - exercise-network
+    
+    processing:
+        container_name: processing_component
+        build:
+            context: processing
+            dockerfile: DockerfileProcessing
+        image: processing:latest
+        depends_on:
+            - arangodb
+            - test
+        restart: on-failure
+        ports:
+            - 8082:8082
+        networks:
+            - exercise-network
+
+    test:
+        container_name: test_component
+        build:
+            context: test
+            dockerfile: DockerfileTest
+        image: test:latest
+        depends_on:
+            - "arangodb"
+        restart: on-failure
+        ports:
+            - 8080:8080
+        networks:
+            - exercise-network
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://test:8080/getDatabases"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+
+    arangodb:
+        container_name: arangodb_database
+        image: arangodb:latest
+        environment:
+          ARANGO_ROOT_PASSWORD: ""
+        ports:
+          - 8529:8529
+        volumes:
+          - arangodb_data_container:/var/lib/arangodb3
+          - arangodb_apps_data_container:/var/lib/arangodb3-apps
+        networks:
+            - exercise-network
+
+networks:
+    exercise-network:
+        driver: bridge
+
+volumes:
+  arangodb_data_container:
+  arangodb_apps_data_container:

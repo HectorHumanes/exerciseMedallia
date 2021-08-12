@@ -1,0 +1,4 @@
+FROM openjdk:8-jdk-alpine
+MAINTAINER hector.com
+COPY test-endpoints.jar test-endpoints.jar
+ENTRYPOINT ["java","-jar","/test-endpoints.jar"]
